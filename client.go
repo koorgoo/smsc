@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
 const DefaultURL = "https://smsc.ru/sys/send.php"
@@ -104,49 +102,6 @@ func wrapErr(err error) error {
 		return err
 	}
 	return fmt.Errorf("smsc: %s", err)
-}
-
-// message controls what and how will sent to API.
-type message struct {
-	Login    string
-	Password string
-	Text     string
-	Phones   []string
-	Format   format
-	Cost     Cost
-}
-
-const (
-	textMaxLen           = 800
-	smsMaxLen            = 160
-	smsMaxLenCyrillic    = 70
-	smsHeaderLen         = 7
-	smsHeaderLenCyrillic = 3
-)
-
-// Validate checks the message integrity and returns an optional error.
-func (m *message) Validate() error {
-	// TODO: Validate length of the text.
-	// TODO: Validate phone numbers exist.
-	// TODO: Validate other options?
-	return nil
-}
-
-// Values returns a form for a request to API.
-func (m *message) Values() url.Values {
-	v := url.Values{
-		"login":  []string{m.Login},
-		"psw":    []string{m.Password},
-		"mes":    []string{m.Text},
-		"phones": m.Phones,
-	}
-	if m.Format != 0 {
-		v.Set("fmt", strconv.FormatInt(int64(m.Format), 10))
-	}
-	if m.Cost != 0 {
-		v.Set("cost", strconv.FormatInt(int64(m.Cost), 10))
-	}
-	return v
 }
 
 // Opt configures a send message and a Result.
