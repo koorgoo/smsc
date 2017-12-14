@@ -1,8 +1,11 @@
 package smsc
 
 import (
+	"errors"
 	"fmt"
 )
+
+var ErrBadValid = errors.New("smsc: invalid period for valid")
 
 // Opt configures a send message and a Result.
 type Opt func(*message)
@@ -18,6 +21,8 @@ func With(v ...interface{}) Opt {
 			opts = append(opts, withOp(t))
 		case ErrOpt:
 			opts = append(opts, withErr(t))
+		case Opt:
+			opts = append(opts, t)
 		default:
 			panic(fmt.Sprintf("%T", t))
 		}
@@ -74,19 +79,43 @@ type ErrOpt int
 
 const Err ErrOpt = 1
 
-// TODO: Add more options.
-// Major - ID, Sender, Translit, Subj.
-// Minor - TinyURL, Time, Tz, Period, Freq, Flash, Bin, Push, HLR, Ping, MMS,
-// Mail, Viber, FileURL, Call, Voice, List, Valid, MaxSMS, ImgCode, UserIP, PP.
-
-// formatOpt retuns a string for v value of int-like option.
-func formatOpt(v interface{}) string {
-	var s string
-	switch v.(type) {
-	case format, Cost, OpOpt, ErrOpt:
-		s = fmt.Sprintf("%v", v)
-	default:
-		panic(fmt.Sprintf("unknown type: %T", v))
+func Valid(h, m int) Opt {
+	if (h < 0 || m < 0) ||
+		(h > 24 || m > 59) ||
+		(h == 0 && m < 1) ||
+		(h == 24 && m > 0) {
+		panic(ErrBadValid)
 	}
-	return s
+	return (&valid{h, m}).Apply
+}
+
+// valid defines how long an operator must try to send a message.
+type valid struct {
+	Hours   int
+	Minutes int
+}
+
+func (v *valid) Apply(m *message) {
+	m.Valid = v
+}
+
+func (v *valid) String() string {
+	var h, m string
+	if v.Hours < 9 {
+		h = "0"
+	}
+	if v.Minutes < 9 {
+		m = "0"
+	}
+	return fmt.Sprintf("%s%d:%s%d", h, v.Hours, m, v.Minutes)
+}
+
+// TODO: Add more options.
+// ID, Sender, Translit, Subj, TinyURL, Time, Tz, Period, Freq, Flash, Bin,
+// Push, HLR, Ping, MMS, Mail, Viber, FileURL, Call, Voice, List, MaxSMS,
+// ImgCode, UserIP, PP.
+
+// formatOpt retuns a string for v value of option.
+func formatOpt(v interface{}) string {
+	return fmt.Sprintf("%v", v)
 }

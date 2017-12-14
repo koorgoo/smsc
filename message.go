@@ -22,6 +22,7 @@ type message struct {
 	Cost     Cost
 	Op       OpOpt
 	Err      ErrOpt
+	Valid    *valid
 }
 
 const (
@@ -87,7 +88,7 @@ func (m *message) Values() url.Values {
 	}
 
 	if m.Charset != "" {
-		v.Set("charset", string(m.Charset))
+		v.Set("charset", formatOpt(m.Charset))
 	}
 	if m.Format != 0 {
 		v.Set("fmt", formatOpt(m.Format))
@@ -100,6 +101,9 @@ func (m *message) Values() url.Values {
 	}
 	if m.Err != 0 {
 		v.Set("err", formatOpt(m.Err))
+	}
+	if m.Valid != nil {
+		v.Set("valid", formatOpt(m.Valid))
 	}
 	return v
 }

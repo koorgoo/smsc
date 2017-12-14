@@ -138,7 +138,7 @@ var ClientPrepareTests = []struct {
 		},
 		Text:   "test",
 		Phones: []string{"123"},
-		Opts:   []Opt{With(CostWithoutSend)},
+		Opts:   []Opt{With(CostWithoutSend, Valid(0, 1))},
 		Message: message{
 			Login:    "me",
 			Password: "pass",
@@ -147,6 +147,7 @@ var ClientPrepareTests = []struct {
 			Charset:  charsetUTF8,
 			Format:   formatJSON,
 			Cost:     CostWithoutSend,
+			Valid:    &valid{0, 1},
 		},
 	},
 }

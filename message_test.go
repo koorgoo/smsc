@@ -120,6 +120,7 @@ var MessageValuesTests = []struct {
 			Cost:    CostCountBalance,
 			Op:      Op,
 			Err:     Err,
+			Valid:   &valid{0, 1},
 		},
 		url.Values{
 			"login":   []string{""},
@@ -131,6 +132,7 @@ var MessageValuesTests = []struct {
 			"cost":    []string{formatOpt(CostCountBalance)},
 			"op":      []string{formatOpt(Op)},
 			"err":     []string{formatOpt(Err)},
+			"valid":   []string{formatOpt(&valid{0, 1})},
 		},
 	},
 }
