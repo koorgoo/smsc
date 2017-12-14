@@ -34,7 +34,7 @@ const (
 
 // Validate checks the message integrity and returns an optional error.
 func (m *message) Validate() error {
-	if n := m.countBytes(); n > smsMaxSize {
+	if n := CountBytes(m.Text); n > smsMaxSize {
 		return ErrLongText
 	}
 	if len(m.Phones) == 0 {
@@ -44,10 +44,9 @@ func (m *message) Validate() error {
 	return nil
 }
 
-// countBytes returns a rough number of bytes to send a text of m taking into
-// account that a multi-sms message will contain headers.
-func (m *message) countBytes() int {
-	if n := len(m.Text); n < smsSize {
+// CountBytes returns a number of bytes for text to be send in SMS.
+func CountBytes(text string) int {
+	if n := len(text); n < smsSize {
 		return n
 	}
 
@@ -59,7 +58,7 @@ func (m *message) countBytes() int {
 	var size int
 	var smsBytes int
 
-	for _, r := range m.Text {
+	for _, r := range text {
 		n := utf8.EncodeRune(buf, r)
 
 		next := smsBytes + n + smsHeaderSize
