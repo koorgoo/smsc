@@ -48,8 +48,7 @@ const (
 type Cost int
 
 const (
-	CostOmit Cost = iota
-	CostWithoutSend
+	CostWithoutSend Cost = iota + 1
 	CostCount
 	CostCountBalance
 )
@@ -63,13 +62,11 @@ const (
 	charsetKOI8R               = "koi8-r"
 )
 
-// OpOpt controls whether Response must contain information about sent SMS.
+// OpOpt controls whether Response must contain information about all phone
+// numbers.
 type OpOpt int
 
-const (
-	OpOmit OpOpt = iota
-	Op
-)
+const Op OpOpt = 1
 
 // ErrOpt controls whether Response must include information about failed phone
 // numbers.
