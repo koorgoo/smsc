@@ -15,11 +15,12 @@ var ErrNoLoginPassword = errors.New("smsc: empty login or password")
 
 // Config is a Client config.
 type Config struct {
-	URL      string
-	Login    string
-	Password string
-	Opt      Opt
-	Client   *http.Client
+	URL         string
+	Login       string
+	Password    string
+	PasswordMD5 string
+	Opt         Opt
+	Client      *http.Client
 }
 
 // New initializes a Client.
@@ -27,8 +28,14 @@ func New(cfg Config) (*Client, error) {
 	if cfg.URL == "" {
 		cfg.URL = DefaultURL
 	}
-	if cfg.Login == "" || cfg.Password == "" {
+	if cfg.Login == "" {
 		return nil, ErrNoLoginPassword
+	}
+	if cfg.Password == "" && cfg.PasswordMD5 == "" {
+		return nil, ErrNoLoginPassword
+	}
+	if cfg.PasswordMD5 == "" {
+		cfg.PasswordMD5 = hashPassword(cfg.Password)
 	}
 	if cfg.Client == nil {
 		cfg.Client = http.DefaultClient
@@ -36,7 +43,7 @@ func New(cfg Config) (*Client, error) {
 	c := &Client{
 		url:      cfg.URL,
 		login:    cfg.Login,
-		password: hashPassword(cfg.Password),
+		password: cfg.PasswordMD5,
 		opt:      cfg.Opt,
 		http:     cfg.Client,
 	}

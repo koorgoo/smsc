@@ -70,6 +70,10 @@ var NewTests = []struct {
 		nil,
 	},
 	{
+		Config{Login: "test", PasswordMD5: "pass"},
+		nil,
+	},
+	{
 		Config{Login: "test"},
 		ErrNoLoginPassword,
 	},
@@ -96,11 +100,30 @@ var ClientPrepareTests = []struct {
 	Message message
 }{
 	{
-		Name: "Without options",
+		Name: "Use a hash from a password",
 		Config: Config{
 			Login:    "me",
 			Password: pass,
 			Opt:      nil,
+		},
+		Text:   "test",
+		Phones: []string{"123"},
+		Opts:   nil,
+		Message: message{
+			Login:    "me",
+			Password: passHash,
+			Text:     "test",
+			Phones:   []string{"123"},
+			Charset:  charsetUTF8,
+			Format:   formatJSON,
+		},
+	},
+	{
+		Name: "Use a hashed password",
+		Config: Config{
+			Login:       "me",
+			PasswordMD5: passHash,
+			Opt:         nil,
 		},
 		Text:   "test",
 		Phones: []string{"123"},
