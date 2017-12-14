@@ -21,6 +21,7 @@ type message struct {
 	Format   format
 	Cost     Cost
 	Op       OpOpt
+	Err      ErrOpt
 }
 
 const (
@@ -96,6 +97,9 @@ func (m *message) Values() url.Values {
 	}
 	if m.Op != 0 {
 		v.Set("op", formatOpt(m.Op))
+	}
+	if m.Err != 0 {
+		v.Set("err", formatOpt(m.Err))
 	}
 	return v
 }

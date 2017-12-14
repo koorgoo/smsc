@@ -119,6 +119,7 @@ var MessageValuesTests = []struct {
 			Format:  formatJSON,
 			Cost:    CostCountBalance,
 			Op:      Op,
+			Err:     Err,
 		},
 		url.Values{
 			"login":   []string{""},
@@ -129,6 +130,7 @@ var MessageValuesTests = []struct {
 			"fmt":     []string{formatOpt(formatJSON)},
 			"cost":    []string{formatOpt(CostCountBalance)},
 			"op":      []string{formatOpt(Op)},
+			"err":     []string{formatOpt(Err)},
 		},
 	},
 }
