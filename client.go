@@ -17,11 +17,10 @@ type Config struct {
 	URL      string
 	Login    string
 	Password string
+	Opt      Opt
 	Client   *http.Client
 
 	// TODO: Add flag to send md5 hash of password in requests.
-	// TODO: Add Opt to be applied to all messages by default. The option must
-	// be overriden by options passed into Send().
 }
 
 // New initializes a Client.
@@ -39,6 +38,7 @@ func New(cfg Config) (*Client, error) {
 		url:      cfg.URL,
 		login:    cfg.Login,
 		password: cfg.Password,
+		opt:      cfg.Opt,
 		http:     cfg.Client,
 	}
 	return c, nil
@@ -49,22 +49,12 @@ type Client struct {
 	url      string
 	login    string
 	password string
+	opt      Opt
 	http     *http.Client
 }
 
 func (c *Client) Send(text string, phones []string, opts ...Opt) (*Result, error) {
-	m := &message{
-		Login:    c.login,
-		Password: c.password,
-		Text:     text,
-		Phones:   phones,
-		Charset:  charsetUTF8,
-		Format:   formatJSON,
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-
+	m := c.prepare(text, phones, opts)
 	if err := m.Validate(); err != nil {
 		return nil, err
 	}
@@ -95,6 +85,25 @@ func (c *Client) Send(text string, phones []string, opts ...Opt) (*Result, error
 		return nil, mr.Error
 	}
 	return mr.Result, nil
+}
+
+// prepare returns a message ready to be sent.
+func (c *Client) prepare(text string, phones []string, opts []Opt) *message {
+	m := &message{
+		Login:    c.login,
+		Password: c.password,
+		Text:     text,
+		Phones:   phones,
+		Charset:  charsetUTF8,
+		Format:   formatJSON,
+	}
+	if c.opt != nil {
+		c.opt(m)
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
 }
 
 // wrapErr add smsc package prefix to error.

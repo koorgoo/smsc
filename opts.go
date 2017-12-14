@@ -8,22 +8,28 @@ import (
 // Opt configures a send message and a Result.
 type Opt func(*message)
 
-// TODO: Add generic With that will set a field in message based on option type.
-//
-//     func With(opts ...interface{}) Opt
-//
-
-func WithCost(c Cost) Opt {
+// With returns an Opt from options values v.
+func With(v ...interface{}) Opt {
+	var opts []Opt
+	for _, t := range v {
+		switch t := t.(type) {
+		case Cost:
+			opts = append(opts, withCost(t))
+		case OpOpt:
+			opts = append(opts, withOp(t))
+		default:
+			panic(fmt.Sprintf("%T", t))
+		}
+	}
 	return func(m *message) {
-		m.Cost = c
+		for _, opt := range opts {
+			opt(m)
+		}
 	}
 }
 
-func WithOp() Opt {
-	return func(m *message) {
-		m.Op = Op
-	}
-}
+func withCost(c Cost) Opt { return func(m *message) { m.Cost = c } }
+func withOp(o OpOpt) Opt  { return func(m *message) { m.Op = o } }
 
 // format defines API output format. JSON format is used because it is simpler
 // to parse response from.

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strconv"
 	"testing"
 )
 
@@ -83,58 +82,139 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestClient_Send_fillsRequestWithRequiredParameters(t *testing.T) {
-	login, password := "test", "pass"
-	phone := "+71234567890"
+var ClientPrepareTests = []struct {
+	Name    string
+	Config  Config
+	Text    string
+	Phones  []string
+	Opts    []Opt
+	Message message
+}{
+	{
+		Name: "Without options",
+		Config: Config{
+			Login:    "me",
+			Password: "pass",
+			Opt:      nil,
+		},
+		Text:   "test",
+		Phones: []string{"123"},
+		Opts:   nil,
+		Message: message{
+			Login:    "me",
+			Password: "pass",
+			Text:     "test",
+			Phones:   []string{"123"},
+			Charset:  charsetUTF8,
+			Format:   formatJSON,
+		},
+	},
+	{
+		Name: "Client options are applied to a message",
+		Config: Config{
+			Login:    "me",
+			Password: "pass",
+			Opt:      With(CostCountBalance),
+		},
+		Text:   "test",
+		Phones: []string{"123"},
+		Opts:   nil,
+		Message: message{
+			Login:    "me",
+			Password: "pass",
+			Text:     "test",
+			Phones:   []string{"123"},
+			Charset:  charsetUTF8,
+			Format:   formatJSON,
+			Cost:     CostCountBalance,
+		},
+	},
+	{
+		Name: "Send options overrides Client's one",
+		Config: Config{
+			Login:    "me",
+			Password: "pass",
+			Opt:      With(CostCountBalance),
+		},
+		Text:   "test",
+		Phones: []string{"123"},
+		Opts:   []Opt{With(CostWithoutSend)},
+		Message: message{
+			Login:    "me",
+			Password: "pass",
+			Text:     "test",
+			Phones:   []string{"123"},
+			Charset:  charsetUTF8,
+			Format:   formatJSON,
+			Cost:     CostWithoutSend,
+		},
+	},
+}
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if m := http.MethodPost; r.Method != m {
-			t.Fatalf("method: want %v, got %v", m, r.Method)
-		}
-		if s := r.PostFormValue("login"); s != login {
-			t.Errorf("login: want %q, got %q", login, s)
-		}
-		if s := r.PostFormValue("psw"); s != password {
-			t.Errorf("psw: want %q, got %q", password, s)
-		}
-		if n := len(r.PostForm["phones"]); n != 1 {
-			t.Fatalf("phones: want 1, got %d", n)
-		}
-		if s := r.PostFormValue("phones"); s != phone {
-			t.Errorf("phones: want %q, got %q", phone, s)
-		}
-
-		n, err := strconv.ParseInt(r.PostFormValue("fmt"), 10, 32)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if v := format(n); v != formatJSON {
-			t.Errorf("fmt: want %v, got %v", formatJSON, v)
-		}
-
-		json.NewEncoder(w).Encode(&Result{Count: 1})
-	}))
-	defer ts.Close()
-
-	c, err := New(Config{
-		URL:      ts.URL,
-		Login:    login,
-		Password: password,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	r, err := c.Send("A test message.", []string{phone})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if r.Count != 1 {
-		t.Fatalf("count: want 1, got %d", r.Count)
+func TestClient_prepare(t *testing.T) {
+	for _, tt := range ClientPrepareTests {
+		t.Run(tt.Name, func(t *testing.T) {
+			c, _ := New(tt.Config)
+			m := c.prepare(tt.Text, tt.Phones, tt.Opts)
+			if !reflect.DeepEqual(m, &tt.Message) {
+				t.Errorf("want %v, got %v", tt.Message, *m)
+			}
+		})
 	}
 }
 
-var SendTests = []struct {
+// func TestClient_Send_fillsRequestWithRequiredParameters(t *testing.T) {
+// 	login, password := "test", "pass"
+// 	phone := "+71234567890"
+
+// 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		if m := http.MethodPost; r.Method != m {
+// 			t.Fatalf("method: want %v, got %v", m, r.Method)
+// 		}
+// 		if s := r.PostFormValue("login"); s != login {
+// 			t.Errorf("login: want %q, got %q", login, s)
+// 		}
+// 		if s := r.PostFormValue("psw"); s != password {
+// 			t.Errorf("psw: want %q, got %q", password, s)
+// 		}
+// 		if n := len(r.PostForm["phones"]); n != 1 {
+// 			t.Fatalf("phones: want 1, got %d", n)
+// 		}
+// 		if s := r.PostFormValue("phones"); s != phone {
+// 			t.Errorf("phones: want %q, got %q", phone, s)
+// 		}
+
+// 		n, err := strconv.ParseInt(r.PostFormValue("fmt"), 10, 32)
+// 		if err != nil {
+// 			t.Fatal(err)
+// 		}
+// 		if v := format(n); v != formatJSON {
+// 			t.Errorf("fmt: want %v, got %v", formatJSON, v)
+// 		}
+
+// 		json.NewEncoder(w).Encode(&Result{Count: 1})
+// 	}))
+// 	defer ts.Close()
+
+// 	c, err := New(Config{
+// 		URL:      ts.URL,
+// 		Login:    login,
+// 		Password: password,
+// 	})
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+
+// 	r, err := c.Send("A test message.", []string{phone})
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if r.Count != 1 {
+// 		t.Fatalf("count: want 1, got %d", r.Count)
+// 	}
+// }
+
+var ClientSendTests = []struct {
 	Value  interface{}
 	Result *Result
 	Err    error
@@ -150,9 +230,20 @@ var SendTests = []struct {
 }
 
 func TestClient_Send(t *testing.T) {
-	for _, tt := range SendTests {
+	minFields := 4 // login, psw, mes, phones
+
+	for _, tt := range ClientSendTests {
 		t.Run(fmt.Sprintf("%v", tt.Value), func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if m := http.MethodPost; r.Method != m {
+					t.Fatalf("method: want %v, got %v", m, r.Method)
+				}
+				if err := r.ParseForm(); err != nil {
+					t.Fatal(err)
+				}
+				if n := len(r.PostForm); n < minFields {
+					t.Fatalf("form: want %v at least, got %v", minFields, n)
+				}
 				json.NewEncoder(w).Encode(tt.Value)
 			}))
 			defer ts.Close()
