@@ -24,6 +24,7 @@ type message struct {
 	Err      ErrOpt
 	Valid    *valid
 	Sender   string
+	Translit TranslitOpt
 }
 
 const (
@@ -107,6 +108,9 @@ func (m *message) Values() url.Values {
 	}
 	if m.Sender != "" {
 		v.Set("sender", formatOpt(m.Sender))
+	}
+	if m.Translit != 0 {
+		v.Set("translit", formatOpt(m.Translit))
 	}
 	return v
 }

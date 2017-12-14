@@ -10,33 +10,33 @@ var ErrBadValid = errors.New("smsc: invalid period for valid")
 // Opt configures a send message and a Result.
 type Opt func(*message)
 
-// With returns an Opt from options values v.
+// With returns an Opt from option values v.
 func With(v ...interface{}) Opt {
 	var opts []Opt
+
 	for _, t := range v {
-		switch t := t.(type) {
+		switch o := t.(type) {
 		case Cost:
-			opts = append(opts, withCost(t))
+			opts = append(opts, func(m *message) { m.Cost = o })
 		case OpOpt:
-			opts = append(opts, withOp(t))
+			opts = append(opts, func(m *message) { m.Op = o })
 		case ErrOpt:
-			opts = append(opts, withErr(t))
+			opts = append(opts, func(m *message) { m.Err = o })
+		case TranslitOpt:
+			opts = append(opts, func(m *message) { m.Translit = o })
 		case Opt:
-			opts = append(opts, t)
+			opts = append(opts, o)
 		default:
 			panic(fmt.Sprintf("%T", t))
 		}
 	}
+
 	return func(m *message) {
 		for _, opt := range opts {
 			opt(m)
 		}
 	}
 }
-
-func withCost(o Cost) Opt  { return func(m *message) { m.Cost = o } }
-func withOp(o OpOpt) Opt   { return func(m *message) { m.Op = o } }
-func withErr(o ErrOpt) Opt { return func(m *message) { m.Err = o } }
 
 // format defines API output format. JSON format is used because it is simpler
 // to parse response from.
@@ -115,8 +115,15 @@ func (v *valid) String() string {
 // Sender value must be registered on the account settings page.
 func Sender(s string) Opt { return func(m *message) { m.Sender = s } }
 
+type TranslitOpt int
+
+const (
+	Translit TranslitOpt = iota + 1
+	TranslitKlinopis
+)
+
 // TODO: Add more options.
-// ID, Translit, Subj, TinyURL, Time, Tz, Period, Freq, Flash, Bin,
+// ID, Subj, TinyURL, Time, Tz, Period, Freq, Flash, Bin,
 // Push, HLR, Ping, MMS, Mail, Viber, FileURL, Call, Voice, List, MaxSMS,
 // ImgCode, UserIP, PP.
 
