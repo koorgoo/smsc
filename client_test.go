@@ -56,6 +56,11 @@ func TestError_Error(t *testing.T) {
 	}
 }
 
+const (
+	pass     = "pass"
+	passHash = "1a1dc91c907325c69271ddf0c944bc72"
+)
+
 var NewTests = []struct {
 	Config Config
 	Err    error
@@ -94,7 +99,7 @@ var ClientPrepareTests = []struct {
 		Name: "Without options",
 		Config: Config{
 			Login:    "me",
-			Password: "pass",
+			Password: pass,
 			Opt:      nil,
 		},
 		Text:   "test",
@@ -102,7 +107,7 @@ var ClientPrepareTests = []struct {
 		Opts:   nil,
 		Message: message{
 			Login:    "me",
-			Password: "pass",
+			Password: passHash,
 			Text:     "test",
 			Phones:   []string{"123"},
 			Charset:  charsetUTF8,
@@ -113,7 +118,7 @@ var ClientPrepareTests = []struct {
 		Name: "Client options are applied to a message",
 		Config: Config{
 			Login:    "me",
-			Password: "pass",
+			Password: pass,
 			Opt:      With(CostCountBalance),
 		},
 		Text:   "test",
@@ -121,7 +126,7 @@ var ClientPrepareTests = []struct {
 		Opts:   nil,
 		Message: message{
 			Login:    "me",
-			Password: "pass",
+			Password: passHash,
 			Text:     "test",
 			Phones:   []string{"123"},
 			Charset:  charsetUTF8,
@@ -133,7 +138,7 @@ var ClientPrepareTests = []struct {
 		Name: "Send options overrides Client's one",
 		Config: Config{
 			Login:    "me",
-			Password: "pass",
+			Password: pass,
 			Opt:      With(CostCountBalance),
 		},
 		Text:   "test",
@@ -141,7 +146,7 @@ var ClientPrepareTests = []struct {
 		Opts:   []Opt{With(CostWithoutSend, Valid(0, 1))},
 		Message: message{
 			Login:    "me",
-			Password: "pass",
+			Password: passHash,
 			Text:     "test",
 			Phones:   []string{"123"},
 			Charset:  charsetUTF8,

@@ -1,6 +1,7 @@
 package smsc
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,8 +20,6 @@ type Config struct {
 	Password string
 	Opt      Opt
 	Client   *http.Client
-
-	// TODO: Add flag to send md5 hash of password in requests.
 }
 
 // New initializes a Client.
@@ -37,11 +36,18 @@ func New(cfg Config) (*Client, error) {
 	c := &Client{
 		url:      cfg.URL,
 		login:    cfg.Login,
-		password: cfg.Password,
+		password: hashPassword(cfg.Password),
 		opt:      cfg.Opt,
 		http:     cfg.Client,
 	}
 	return c, nil
+}
+
+// hashPassword returns a hash from s.
+//
+// It's always used to hash a password from Config.
+func hashPassword(s string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
 }
 
 // Client has methods for API calls.
