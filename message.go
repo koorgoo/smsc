@@ -3,7 +3,6 @@ package smsc
 import (
 	"errors"
 	"net/url"
-	"strconv"
 	"unicode/utf8"
 )
 
@@ -18,8 +17,10 @@ type message struct {
 	Password string
 	Text     string
 	Phones   []string
+	Charset  charset
 	Format   format
 	Cost     Cost
+	Op       OpOpt
 }
 
 const (
@@ -74,17 +75,27 @@ func (m *message) countBytes() int {
 
 // Values returns a form for a request to API.
 func (m *message) Values() url.Values {
+	phones := make([]string, len(m.Phones))
+	copy(phones, m.Phones)
+
 	v := url.Values{
 		"login":  []string{m.Login},
 		"psw":    []string{m.Password},
 		"mes":    []string{m.Text},
-		"phones": m.Phones,
+		"phones": phones,
+	}
+
+	if m.Charset != "" {
+		v.Set("charset", string(m.Charset))
 	}
 	if m.Format != 0 {
-		v.Set("fmt", strconv.FormatInt(int64(m.Format), 10))
+		v.Set("fmt", formatOpt(m.Format))
 	}
 	if m.Cost != 0 {
-		v.Set("cost", strconv.FormatInt(int64(m.Cost), 10))
+		v.Set("cost", formatOpt(m.Cost))
+	}
+	if m.Op != 0 {
+		v.Set("op", formatOpt(m.Op))
 	}
 	return v
 }

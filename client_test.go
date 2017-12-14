@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 	"strconv"
 	"testing"
@@ -74,36 +73,6 @@ var NewTests = []struct {
 		Config{Password: "test"},
 		ErrNoLoginPassword,
 	},
-}
-
-var MessageValuesTests = []struct {
-	Message message
-	Values  url.Values
-}{
-	{
-		message{
-			Login:    "test",
-			Password: "pass",
-			Text:     "Hello, world!",
-			Phones:   []string{"+71234567890"},
-			Format:   formatJSON,
-		},
-		url.Values{
-			"login":  []string{"test"},
-			"psw":    []string{"pass"},
-			"mes":    []string{"Hello, world!"},
-			"phones": []string{"+71234567890"},
-			"fmt":    []string{"3"},
-		},
-	},
-}
-
-func TestMessage_Values(t *testing.T) {
-	for _, tt := range MessageValuesTests {
-		if v := tt.Message.Values(); !reflect.DeepEqual(v, tt.Values) {
-			t.Errorf("want %v, got %v", tt.Values, v)
-		}
-	}
 }
 
 func TestNew(t *testing.T) {

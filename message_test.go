@@ -1,6 +1,10 @@
 package smsc
 
-import "testing"
+import (
+	"net/url"
+	"reflect"
+	"testing"
+)
 
 const (
 	abc    = "abcdefghijklmnopqrstuvwxyz"
@@ -88,5 +92,51 @@ func TestMessage_Validate(t *testing.T) {
 				t.Errorf("want %v, got %v", tt.Err, err)
 			}
 		})
+	}
+}
+
+var MessageValuesTests = []struct {
+	Message message
+	Values  url.Values
+}{
+	{
+		message{
+			Login:    "me",
+			Password: "pass",
+			Text:     "test",
+			Phones:   []string{"1234"},
+		},
+		url.Values{
+			"login":  []string{"me"},
+			"psw":    []string{"pass"},
+			"mes":    []string{"test"},
+			"phones": []string{"1234"},
+		},
+	},
+	{
+		message{
+			Charset: charsetUTF8,
+			Format:  formatJSON,
+			Cost:    CostCountBalance,
+			Op:      Op,
+		},
+		url.Values{
+			"login":   []string{""},
+			"psw":     []string{""},
+			"mes":     []string{""},
+			"phones":  []string{},
+			"charset": []string{charsetUTF8},
+			"fmt":     []string{formatOpt(formatJSON)},
+			"cost":    []string{formatOpt(CostCountBalance)},
+			"op":      []string{formatOpt(Op)},
+		},
+	},
+}
+
+func TestMessage_Values(t *testing.T) {
+	for _, tt := range MessageValuesTests {
+		if v := tt.Message.Values(); !reflect.DeepEqual(v, tt.Values) {
+			t.Errorf("want %v, got %v", tt.Values, v)
+		}
 	}
 }

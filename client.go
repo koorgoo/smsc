@@ -58,6 +58,7 @@ func (c *Client) Send(text string, phones []string, opts ...Opt) (*Result, error
 		Password: c.password,
 		Text:     text,
 		Phones:   phones,
+		Charset:  charsetUTF8,
 		Format:   formatJSON,
 	}
 	for _, opt := range opts {
@@ -104,55 +105,24 @@ func wrapErr(err error) error {
 	return fmt.Errorf("smsc: %s", err)
 }
 
-// Opt configures a send message and a Result.
-type Opt func(*message)
-
-// TODO: Add generic With. Such multi Opt could be used in Config for Client.
-//
-//     func With(opts ...Opt) Opt
-//
-
-func WithCost(c Cost) Opt {
-	return func(m *message) {
-		m.Cost = c
-	}
-}
-
-// format defines API output format.
-type format int
-
-const (
-	formatInlineVerbose = 0
-	formatInline        = 1
-	formatXML           = 2
-	formatJSON          = 3
-)
-
-// Cost defines whether API should send a Result with cost information.
-type Cost int
-
-const (
-	CostOmit         Cost = 0
-	CostWithoutSend       = 1
-	CostCount             = 2
-	CostCountBalance      = 3
-)
-
-// TODO: Add more options.
-// Major - Op, ID, Sender, Translit, Subj, Charset.
-// Minor - TinyURL, Time, Tz, Period, Freq, Flash, Bin, Push, HLR, Ping, MMS,
-// Mail, Viber, FileURL, Call, Voice, List, Valid, MaxSMS, ImgCode, UserIP, Err,
-// PP.
-
 type Result struct {
 	ID      int     `json:"id"`
 	Count   int     `json:"cnt"`
 	Cost    *string `json:"cost"`
 	Balance *string `json:"balance"`
+	Phones  []Phone `json:"phones"`
 }
 
 func (r *Result) String() string {
 	return fmt.Sprintf("OK - %d SMS, ID - %d", r.Count, r.ID)
+}
+
+type Phone struct {
+	Phone  string  `json:"phone"`
+	Mccmnc string  `json:"mccmnc"`
+	Cost   string  `json:"cost"`
+	Status *string `json:"status"`
+	Error  *string `json:"error"`
 }
 
 type Error struct {
