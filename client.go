@@ -146,7 +146,7 @@ const (
 
 type Result struct {
 	ID      int     `json:"id"`
-	Count   int     `json:"count"`
+	Count   int     `json:"cnt"`
 	Cost    *string `json:"cost"`
 	Balance *string `json:"balance"`
 }
