@@ -110,8 +110,13 @@ func (v *valid) String() string {
 	return fmt.Sprintf("%s%d:%s%d", h, v.Hours, m, v.Minutes)
 }
 
+// Sender sets the author of SMS.
+//
+// Sender value must be registered on the account settings page.
+func Sender(s string) Opt { return func(m *message) { m.Sender = s } }
+
 // TODO: Add more options.
-// ID, Sender, Translit, Subj, TinyURL, Time, Tz, Period, Freq, Flash, Bin,
+// ID, Translit, Subj, TinyURL, Time, Tz, Period, Freq, Flash, Bin,
 // Push, HLR, Ping, MMS, Mail, Viber, FileURL, Call, Voice, List, MaxSMS,
 // ImgCode, UserIP, PP.
 

@@ -121,6 +121,7 @@ var MessageValuesTests = []struct {
 			Op:      Op,
 			Err:     Err,
 			Valid:   &valid{0, 1},
+			Sender:  "test",
 		},
 		url.Values{
 			"login":   []string{""},
@@ -133,6 +134,7 @@ var MessageValuesTests = []struct {
 			"op":      []string{formatOpt(Op)},
 			"err":     []string{formatOpt(Err)},
 			"valid":   []string{formatOpt(&valid{0, 1})},
+			"sender":  []string{"test"},
 		},
 	},
 }

@@ -23,6 +23,7 @@ type message struct {
 	Op       OpOpt
 	Err      ErrOpt
 	Valid    *valid
+	Sender   string
 }
 
 const (
@@ -103,6 +104,9 @@ func (m *message) Values() url.Values {
 	}
 	if m.Valid != nil {
 		v.Set("valid", formatOpt(m.Valid))
+	}
+	if m.Sender != "" {
+		v.Set("sender", formatOpt(m.Sender))
 	}
 	return v
 }
