@@ -78,14 +78,11 @@ func CountBytes(text string) int {
 
 // Values returns a form for a request to API.
 func (m *message) Values() url.Values {
-	phones := make([]string, len(m.Phones))
-	copy(phones, m.Phones)
-
 	v := url.Values{
 		"login":  []string{m.Login},
 		"psw":    []string{m.Password},
 		"mes":    []string{m.Text},
-		"phones": phones,
+		"phones": m.Phones,
 	}
 
 	if m.Charset != "" {

@@ -115,6 +115,7 @@ var MessageValuesTests = []struct {
 	},
 	{
 		message{
+			Phones:   somePhone,
 			Charset:  charsetUTF8,
 			Format:   formatJSON,
 			Cost:     CostCountBalance,
@@ -128,7 +129,7 @@ var MessageValuesTests = []struct {
 			"login":    []string{""},
 			"psw":      []string{""},
 			"mes":      []string{""},
-			"phones":   []string{},
+			"phones":   somePhone,
 			"charset":  []string{charsetUTF8},
 			"fmt":      []string{formatOpt(formatJSON)},
 			"cost":     []string{formatOpt(CostCountBalance)},
